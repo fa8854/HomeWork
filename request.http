@@ -1,0 +1,5 @@
+GET http://localhost:8080
+
+###Информация о проекте
+
+GET http://localhost:8080/info
