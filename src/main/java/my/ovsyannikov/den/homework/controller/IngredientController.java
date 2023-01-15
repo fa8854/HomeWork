@@ -8,11 +8,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import my.ovsyannikov.den.homework.model.Ingredient;
 import my.ovsyannikov.den.homework.service.IngredientServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
-
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -84,5 +89,28 @@ public class IngredientController {
 
     public Ingredient deleteIngredient(@PathVariable("id") long id) {
         return ingredientService.remove(id);
+    }
+
+
+    @GetMapping("/download")
+    public ResponseEntity< InputStreamResource> downloadRecipes() throws IOException {
+        Pair <InputStreamResource, Long> pair = ingredientService.getAllInByte();
+        InputStreamResource inputStreamResource = pair.getKey();
+        long length = pair.getValue();
+        if ( inputStreamResource == null){
+            return ResponseEntity.internalServerError().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .contentLength(length)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"ingredient.json\"")
+                .body(inputStreamResource);
+    }
+
+    @PostMapping(value = "/import",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void importIngredients(MultipartFile ingredients){
+        ingredientService.importIngredients(ingredients);
     }
 }

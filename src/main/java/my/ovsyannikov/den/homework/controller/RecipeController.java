@@ -8,9 +8,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import my.ovsyannikov.den.homework.model.Recipe;
 import my.ovsyannikov.den.homework.service.RecipeService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -73,4 +78,20 @@ public class RecipeController {
         return this.recipeService.getAll();
     }
 
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> downloadRecipes(){
+        byte[] bytes = recipeService.getAllInByte();
+        if (bytes == null){
+            return ResponseEntity.internalServerError().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"recepies.json\"")
+                .body(bytes);
+    }
+
+    @PostMapping(value = "/import",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void importRecipes(MultipartFile recipes){
+        recipeService.importRecipes(recipes);
+    }
 }

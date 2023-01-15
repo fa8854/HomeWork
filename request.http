@@ -3,3 +3,35 @@ GET http://localhost:8080
 ###Информация о проекте
 
 GET http://localhost:8080/info
+
+{
+  "id": 2,
+  "name": "Салат из красной фасоли с творожным сыром, красным луком и сезонным салатом",
+  "cookingTime": 30
+}
+
+###download
+
+GET http://localhost:8080/recipe/download
+
+###
+GET http://localhost:8080/recipe/import
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: from-data;name="recipes";filename="importRecipes.json"
+Content-Type: application/json
+
+< ./importRecipes.json
+--WebAppBoundary
+
+###
+GET http://localhost:8080/ingredient/import
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: from-data;name="ingredient";filename="importIngredients.json"
+Content-Type: application/json
+
+< ./importIngredients.json
+--WebAppBoundary
