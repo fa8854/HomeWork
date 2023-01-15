@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 
+
+
 @RestController
-@Tag(name = "Рецепты", description = "CRUD операции и другие эндпоинты для работы с рецептами")
+@Tag(name = "Рецепты", description = "CRUD")
 @RequestMapping("/recipe")
 public class RecipeController {
     private final RecipeService recipeService;
@@ -26,7 +28,7 @@ public class RecipeController {
 
 
     @GetMapping("{id}")
-    @Operation(summary = "Поиск рецепта", description = "нужно искать рецепт по id")
+    @Operation(summary = "Поиск рецепта", description = "искать рецепт по id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "рецепт найден")})
     public Recipe getRecipe(@PathVariable long id) {
         return this.recipeService.get(id);
