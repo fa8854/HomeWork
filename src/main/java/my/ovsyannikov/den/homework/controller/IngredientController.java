@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 
+
+
 @RestController
-@Tag(name = "Ингредиенты", description = "CRUD операции и другие эндпоинты для работы с ингредиентами")
+@Tag(name = "Ингредиенты", description = "CRUD")
 @RequestMapping("/ingredient")
 public class IngredientController {
     private final IngredientServiceImpl ingredientService;
@@ -41,17 +43,22 @@ public class IngredientController {
             description = "для добавления ингредиента требуется названиие, количество и единица измерения")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент был успешно добавлен",
             content = {@Content(mediaType = "application/json")})})
+
+
     public ResponseEntity<?> addIngredient(@RequestBody Ingredient ingredient) {
         if (StringUtils.isBlank(ingredient.getName())) {
             return ResponseEntity.badRequest().body("Название ингредиента не может быть пустым");
         }
         return ResponseEntity.ok(ingredientService.add(ingredient));
     }
+
+
     @GetMapping
     @Operation(summary = "Получение всех ингредиентов",
             description = "получение списка List всех ингредиентов")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиенты были успешно получены",
             content = {@Content(mediaType = "формат List")})})
+
     public List<Ingredient> getAll() {
         return this.ingredientService.getAll();
     }
@@ -62,6 +69,7 @@ public class IngredientController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент был успешно отредактирован"),
             @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
             @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
+
     public Ingredient updateIngredient(@PathVariable("id") long id, @RequestBody Ingredient ingredient) {
         return ingredientService.update(id, ingredient);
     }
@@ -72,6 +80,7 @@ public class IngredientController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент успешно удален"),
             @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
             @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
+
     public Ingredient deleteIngredient(@PathVariable("id") long id) {
         return ingredientService.remove(id);
     }
