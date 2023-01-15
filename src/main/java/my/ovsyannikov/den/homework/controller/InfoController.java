@@ -24,7 +24,7 @@ public class InfoController {
     @Operation(summary = "Информация о проекте", description = "содержит автора проекта, название проекта и дату создания")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "информация успешно найдена")})
     public InfoRecord info() {
-        return new InfoRecord("Natalya Izmaylova",
-                "Рецепты", LocalDate.of(2022, 12, 24), "Книга рецептов");
+        return new InfoRecord("Денис Овсянников",
+                "Рецепты", LocalDate.of(2023, 01, 14), "Книга рецептов");
     }
 }

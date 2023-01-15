@@ -9,6 +9,7 @@ public interface RecipeService {
 
     Recipe get(Long id);
 
+
     List<Recipe> getAll();
 
     Recipe update(long id, Recipe recipe);

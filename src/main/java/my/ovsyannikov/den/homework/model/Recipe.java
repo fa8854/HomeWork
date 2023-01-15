@@ -7,6 +7,7 @@ public class Recipe {
 
     private String name;
     private int cookingTime;
+
     private List<Ingredient> ingredients;
     private List<String> steps;
 

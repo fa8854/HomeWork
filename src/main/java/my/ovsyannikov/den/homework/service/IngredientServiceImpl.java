@@ -9,6 +9,7 @@ public class IngredientServiceImpl implements IngredientService{
     private final Map<Long, Ingredient> ingredientMap = new HashMap<>();
     public long counter = 0;
 
+
     @Override
     public Ingredient add(Ingredient ingredient) {
         ingredientMap.put(this.counter++, ingredient);

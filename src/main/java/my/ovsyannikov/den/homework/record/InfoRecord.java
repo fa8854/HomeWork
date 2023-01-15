@@ -30,4 +30,5 @@ public class InfoRecord {
     public String getDescription() {
         return description;
     }
+
 }

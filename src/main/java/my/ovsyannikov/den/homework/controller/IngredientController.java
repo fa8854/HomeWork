@@ -77,7 +77,7 @@ public class IngredientController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Удаление ингредиента",
             description = "можно удалить ингредиент только по id")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент успешно удален"),
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент удален"),
             @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
             @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
 

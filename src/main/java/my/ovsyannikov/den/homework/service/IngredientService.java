@@ -8,6 +8,7 @@ import java.util.List;
 public interface IngredientService {
     Ingredient add(Ingredient ingredient);
 
+
     Ingredient get(long id);
 
     List<Ingredient> getAll();

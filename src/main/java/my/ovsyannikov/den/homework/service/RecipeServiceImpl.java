@@ -7,6 +7,7 @@ import java.util.*;
 @Service
 public class RecipeServiceImpl implements RecipeService{
     private final Map<Long, Recipe> recipeMap = new HashMap<>();
+
     public long counter = 0;
 
     @Override
