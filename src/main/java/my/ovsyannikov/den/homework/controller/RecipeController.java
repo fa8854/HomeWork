@@ -51,6 +51,7 @@ public class RecipeController {
     @Operation(summary = "Редактирование рецепта",
             description = "можно редактировать по id как один параметр, так и несколько в том числе название, время приготовления, список ингредиентов и шаги приготовления")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "рецепт был отредактирован")})
+
     public Recipe updateRecipe(@PathVariable("id") long id, @RequestBody Recipe recipe) {
         return recipeService.update(id, recipe);
     }

@@ -74,6 +74,7 @@ public class IngredientController {
         return ingredientService.update(id, ingredient);
     }
 
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Удаление ингредиента",
             description = "можно удалить ингредиент только по id")

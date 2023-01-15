@@ -11,6 +11,7 @@ public interface IngredientService {
 
     Ingredient get(long id);
 
+
     List<Ingredient> getAll();
 
     Ingredient update(long id, Ingredient ingredient);

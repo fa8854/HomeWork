@@ -12,6 +12,7 @@ public interface RecipeService {
 
     List<Recipe> getAll();
 
+
     Recipe update(long id, Recipe recipe);
 
     Recipe remove(long id);
