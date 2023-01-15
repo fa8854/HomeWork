@@ -27,4 +27,5 @@ public class InfoController {
         return new InfoRecord("Денис Овсянников",
                 "Рецепты", LocalDate.of(2023, 01, 14), "Книга рецептов");
     }
+
 }
