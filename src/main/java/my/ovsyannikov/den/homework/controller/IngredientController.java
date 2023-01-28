@@ -18,13 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 
-
 @RestController
-@Tag(name = "Ингредиенты", description = "CRUD")
+@Tag(name = "Ингредиенты", description = "CRUD операции и другие эндпоинты для работы с ингредиентами")
 @RequestMapping("/ingredient")
 public class IngredientController {
     private final IngredientServiceImpl ingredientService;
@@ -37,8 +35,9 @@ public class IngredientController {
     @GetMapping("{id}")
     @Operation(summary = "Поиск ингредиента", description = "нужно искать ингредиент по id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент был найден"),
-            @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
-            @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
+            @ApiResponse(responseCode = "400", description = "есть ошибка в параметрах запроса"),
+            @ApiResponse(responseCode = "404", description = "URL неверный или такого действия нет в веб-приложении"),
+            @ApiResponse(responseCode = "500", description = "во время выполнения запроса произошла ошибка на сервере")})
     public Ingredient getIngredient(@PathVariable long id) {
         return this.ingredientService.get(id);
     }
@@ -48,22 +47,17 @@ public class IngredientController {
             description = "для добавления ингредиента требуется названиие, количество и единица измерения")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент был успешно добавлен",
             content = {@Content(mediaType = "application/json")})})
-
-
     public ResponseEntity<?> addIngredient(@RequestBody Ingredient ingredient) {
         if (StringUtils.isBlank(ingredient.getName())) {
             return ResponseEntity.badRequest().body("Название ингредиента не может быть пустым");
         }
         return ResponseEntity.ok(ingredientService.add(ingredient));
     }
-
-
     @GetMapping
     @Operation(summary = "Получение всех ингредиентов",
             description = "получение списка List всех ингредиентов")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиенты были успешно получены",
             content = {@Content(mediaType = "формат List")})})
-
     public List<Ingredient> getAll() {
         return this.ingredientService.getAll();
     }
@@ -72,9 +66,9 @@ public class IngredientController {
     @Operation(summary = "Редактирование ингредиента",
             description = "можно редактировать по id как один параметр, так и несколько в том числе название, количество, единицу измерения")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент был успешно отредактирован"),
-            @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
-            @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
-
+            @ApiResponse(responseCode = "400", description = "есть ошибка в параметрах запроса"),
+            @ApiResponse(responseCode = "404", description = "URL неверный или такого действия нет в веб-приложении"),
+            @ApiResponse(responseCode = "500", description = "во время выполнения запроса произошла ошибка на сервере")})
     public Ingredient updateIngredient(@PathVariable("id") long id, @RequestBody Ingredient ingredient) {
         return ingredientService.update(id, ingredient);
     }
@@ -83,34 +77,11 @@ public class IngredientController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Удаление ингредиента",
             description = "можно удалить ингредиент только по id")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент удален"),
-            @ApiResponse(responseCode = "400", description = "плохой запрос, отправлен некорректный запрос серверу"),
-            @ApiResponse(responseCode = "500", description = "сервер столкнулся с неожиданной ошибкой, которая помешала ему выполнить запрос")})
-
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "ингредиент успешно удален"),
+            @ApiResponse(responseCode = "400", description = "есть ошибка в параметрах запроса"),
+            @ApiResponse(responseCode = "404", description = "URL неверный или такого действия нет в веб-приложении"),
+            @ApiResponse(responseCode = "500", description = "во время выполнения запроса произошла ошибка на сервере")})
     public Ingredient deleteIngredient(@PathVariable("id") long id) {
         return ingredientService.remove(id);
-    }
-
-
-    @GetMapping("/download")
-    public ResponseEntity< InputStreamResource> downloadRecipes() throws IOException {
-        Pair <InputStreamResource, Long> pair = ingredientService.getAllInByte();
-        InputStreamResource inputStreamResource = pair.getKey();
-        long length = pair.getValue();
-        if ( inputStreamResource == null){
-            return ResponseEntity.internalServerError().build();
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .contentLength(length)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"ingredient.json\"")
-                .body(inputStreamResource);
-    }
-
-    @PostMapping(value = "/import",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void importIngredients(MultipartFile ingredients){
-        ingredientService.importIngredients(ingredients);
     }
 }

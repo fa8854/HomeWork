@@ -1,76 +1,48 @@
 package my.ovsyannikov.den.homework.service;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Operation;
 import my.ovsyannikov.den.homework.model.Ingredient;
 import my.ovsyannikov.den.homework.model.Recipe;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 
 @Service
-public class RecipeServiceImpl implements RecipeService{
-    private final Map<Long, Recipe> recipeMap = new HashMap<>();
+public class RecipeServiceImpl implements RecipeService {
 
+    private FilesServiceRecipe filesServiceRecipe;
+
+    private Map<Long, Recipe> recipeMap = new TreeMap<>();
     public long counter = 0;
-    private final Path path;
-    private final ObjectMapper objectMapper;
 
-    public RecipeServiceImpl(@Value("${application.file.recipes}") String path){
-        try{
-            this.objectMapper = new ObjectMapper();
-            this.path = Paths.get(path);
-        }catch (InvalidPathException e){
-            e.printStackTrace();
-            throw e;
-        }
+    public RecipeServiceImpl(FilesServiceRecipe filesServiceRecipe) {
+        this.filesServiceRecipe = filesServiceRecipe;
     }
-
 
     @PostConstruct
-    public void init(){
-     readDataFromFile();
-    }
-
-    private void readDataFromFile(){
+    private void init() {
         try {
-            byte [] file = Files.readAllBytes(path);
-            Map<Long, Recipe> mapFromFile = objectMapper.readValue(file, new TypeReference<>() {
-            });
-            recipeMap.putAll(mapFromFile);
-        }catch (IOException e){
+            readRecipeFromFile();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }
 
-    private void writeDataToFile(Map<Long, Recipe> recipeMap){
-        try {
-            byte [] bytes = objectMapper.writeValueAsBytes(recipeMap);
-            Files.write(path, bytes);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
-
 
     @Override
     public Recipe add(Recipe recipe) {
-        Recipe newRecipe = recipeMap.put(this.counter++, recipe);
-        writeDataToFile(recipeMap);
-        return newRecipe;
+        recipeMap.put(this.counter++, recipe);
+        saveRecipeToFile();
+        return recipe;
     }
 
     @Override
@@ -86,40 +58,65 @@ public class RecipeServiceImpl implements RecipeService{
     @Override
     public Recipe update(long id, Recipe recipe) {
         if (recipeMap.containsKey(id)) {
-            Recipe newRecipe = recipeMap.put(id, recipe);
-            writeDataToFile(recipeMap);
-            return newRecipe;
+            saveRecipeToFile();
+            return recipeMap.put(id, recipe);
         }
         return null;
     }
 
     @Override
     public Recipe remove(long id) {
-        Recipe recipe = recipeMap.remove(id);
-        writeDataToFile(recipeMap);
-        return recipe;
+        return recipeMap.remove(id);
     }
 
+
     @Override
-    public byte[] getAllInByte() {
-        try {
-            return Files.readAllBytes(path);
-        } catch (IOException e) {
-             e.printStackTrace();
+    public void addRecipesFromInputStream(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] array = StringUtils.split(line, '|');
+                Recipe recipe = new Recipe(array[0], Integer.valueOf(array[1]), array[2]);
+                add(recipe);
+            }
         }
-        return  null;
     }
 
-    @Override
-    public void importRecipes(MultipartFile recipes) {
+
+    private void saveRecipeToFile() {
         try {
-            Map<Long, Recipe> mapFromRequest = objectMapper.readValue(recipes.getBytes(),
-                    new TypeReference<>() {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", counter);
+            map.put("recipes", recipeMap);
+            String json = new ObjectMapper().writeValueAsString(map);
+            filesServiceRecipe.saveRecipeToFile(json);
+        } catch (JsonProcessingException e) {
+            throw new SaveRecipeException();
+        }
+    }
+
+    private void readRecipeFromFile() {
+        try {
+            String json = filesServiceRecipe.readRecipeFromFile();
+            recipeMap = new ObjectMapper().readValue(json, new TypeReference<LinkedHashMap<Long, Recipe>>() {
             });
-            writeDataToFile(mapFromRequest);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            throw new ReadRecipeException();
         }
+    }
+
+    @Override
+    public File createRecipesTxtFile() {
+        Path path = filesServiceRecipe.createTempFile("Рецепты");
+        try (Writer writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND)){
+            for (Recipe recipe : recipeMap.values()) {
+                writer.append(recipe.toString());
+                writer.append("\n");
+            }
+        } catch (IOException e) {
+            throw new RecipeNotFoundException();
+        }
+        return path.toFile();
     }
 
 

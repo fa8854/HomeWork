@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import my.ovsyannikov.den.homework.model.Ingredient;
-import my.ovsyannikov.den.homework.model.Recipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -23,53 +22,25 @@ import java.util.*;
 
 @Service
 public class IngredientServiceImpl implements IngredientService{
-    private final Map<Long, Ingredient> ingredientMap = new HashMap<>();
+
+    private final FilesServiceIngredient filesService;
+    private Map<Long, Ingredient> ingredientMap = new LinkedHashMap<>();
     public long counter = 0;
-    private final Path path;
-    private final ObjectMapper objectMapper;
 
-    public IngredientServiceImpl(@Value("${application.file.ingredients}") String path){
-        try{
-            this.objectMapper = new ObjectMapper();
-            this.path = Paths.get(path);
-        }catch (InvalidPathException e){
-            e.printStackTrace();
-            throw e;
-        }
+    public IngredientServiceImpl(FilesServiceIngredient filesService) {
+        this.filesService = filesService;
     }
-
 
     @PostConstruct
-    public void init(){
-      readDataFromFile();
+    private void init() {
+        readFromFile();
     }
-
-    private void readDataFromFile(){
-        try {
-            byte [] file = Files.readAllBytes(path);
-            Map<Long, Ingredient> mapFromFile = objectMapper.readValue(file, new TypeReference<>() {
-            });
-            ingredientMap.putAll(mapFromFile);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    private void writeDataToFile(Map<Long, Ingredient> ingredientMap){
-        try {
-        byte [] bytes = objectMapper.writeValueAsBytes(ingredientMap);
-        Files.write(path, bytes);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
 
     @Override
     public Ingredient add(Ingredient ingredient) {
-        Ingredient newIngredient = ingredientMap.put(this.counter++, ingredient);
-        writeDataToFile(ingredientMap);
-        return newIngredient;
+        ingredientMap.put(this.counter++, ingredient);
+        saveToFile();
+        return ingredient;
     }
 
     @Override
@@ -85,44 +56,40 @@ public class IngredientServiceImpl implements IngredientService{
     @Override
     public Ingredient update(long id, Ingredient ingredient) {
         if (ingredientMap.containsKey(id)) {
-            Ingredient newIngredient = ingredientMap.put(id, ingredient);
-            writeDataToFile(ingredientMap);
-            return  newIngredient;
+            saveToFile();
+            return ingredientMap.put(id, ingredient);
         }
         return null;
     }
 
     @Override
     public Ingredient remove(long id) {
-        Ingredient ingredient = ingredientMap.remove(id);
-        writeDataToFile(ingredientMap);
-        return ingredient;
+        return ingredientMap.remove(id);
     }
 
-    @Override
-    public Pair<InputStreamResource, Long> getAllInByte() {
 
+
+    private void saveToFile() {
         try {
-            return Pair.of(new InputStreamResource(new FileInputStream(path.toFile())),
-                    path.toFile().length());
-
-        } catch (FileNotFoundException e) {
-           e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public void importIngredients(MultipartFile ingredients) {
-        try {
-            Map<Long, Ingredient> mapFromRequest = objectMapper.readValue(ingredients.getBytes(),
-                    new TypeReference<>() {
-                    });
-            writeDataToFile(mapFromRequest);
-        } catch (IOException e) {
-            e.printStackTrace();
+            String json = new ObjectMapper().writeValueAsString(ingredientMap);
+            filesService.saveToFile(json);
+        } catch (JsonProcessingException e) {
+            throw new SaveIngredientException();
         }
     }
+
+
+    private void readFromFile() {
+        String json =  filesService.readFromFile();
+        try {
+            ingredientMap = new ObjectMapper().readValue(json, new TypeReference<LinkedHashMap<Long, Ingredient>>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new ReadIngredientException();
+        }
+    }
+
 
 
 }
+

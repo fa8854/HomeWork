@@ -4,6 +4,9 @@ import my.ovsyannikov.den.homework.model.Recipe;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public interface RecipeService {
@@ -11,15 +14,13 @@ public interface RecipeService {
 
     Recipe get(Long id);
 
-
     List<Recipe> getAll();
-
 
     Recipe update(long id, Recipe recipe);
 
     Recipe remove(long id);
 
-    byte[] getAllInByte();
+    void addRecipesFromInputStream(InputStream inputStream) throws IOException;
 
-    void importRecipes(MultipartFile recipes);
+    File createRecipesTxtFile();
 }
