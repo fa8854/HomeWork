@@ -16,6 +16,7 @@ Content-Type: application/json
       "count": 350,
       "measurement": "гр."
     },
+
     {
       "id": 2,
       "name": "Куриное яйцо",

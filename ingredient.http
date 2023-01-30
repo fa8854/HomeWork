@@ -26,6 +26,7 @@ Content-Type: application/json
 POST http://localhost:8080/ingredient
 Content-Type: application/json
 
+
 {
 
   "name": "Огурцы",
