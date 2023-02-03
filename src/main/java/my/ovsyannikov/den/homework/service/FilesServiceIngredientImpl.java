@@ -1,5 +1,6 @@
 package my.ovsyannikov.den.homework.service;
 
+import my.ovsyannikov.den.homework.exception.ReadIngredientException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
